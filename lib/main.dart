@@ -20,4 +20,6 @@ class MyApp extends StatelessWidget {
       home: const QuranVerseScreen(),
     );
   }
+
+  static of(BuildContext context) {}
 }
