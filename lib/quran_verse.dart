@@ -4,14 +4,17 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
+import '../flutter_flow/flutter_flow_icon_button.dart';
+import '../flutter_flow/flutter_flow_theme.dart';
+import 'QuranTranslation.dart';
 import 'flutter_flow/flutter_flow_icon_button copy.dart';
 import 'flutter_flow/flutter_flow_theme copy.dart';
+import 'package:quran/quran.dart';
 
 class QuranVerse {
   final String? suraId;
   final String? aya;
   final String? text;
-  final _searchController = TextEditingController();
 
   QuranVerse({
     this.suraId,
@@ -30,6 +33,27 @@ class QuranVerse {
   get ayahNumber => null;
 }
 
+//quran_translation
+// class QuranTranslation {
+//   final String? suraId_translation;
+//   final String? aya_translation;
+//   final String? text_translation;
+
+//   QuranTranslation({
+//     this.suraId_translation,
+//     this.aya_translation,
+//     this.text_translation,
+//   });
+
+//   factory QuranTranslation.fromJson(Map<String, dynamic> json) {
+//     return QuranTranslation(
+//       suraId_translation: json['sura_id'] as String,
+//       aya_translation: json['aya'] as String,
+//       text_translation: json['text'] as String,
+//     );
+//   }
+// }
+
 class QuranVerseScreen extends StatefulWidget {
   const QuranVerseScreen({Key? key}) : super(key: key);
 
@@ -38,12 +62,24 @@ class QuranVerseScreen extends StatefulWidget {
 }
 
 class _QuranVerseScreenState extends State<QuranVerseScreen> {
-  List<QuranVerse>? data;
+  List<QuranVerse>? quranWord;
+
+  //quran_translation
+  List? translation;
+
   List<String> surahIds = [];
   String selectedSurahId = '1';
 
+  get surahNames => null;
+
   Future<String> _loadQuranVerseAsset() async {
     return await rootBundle.loadString('assets/new_quran_fonttext1.json');
+  }
+
+//quran_translation
+  Future<String> _loadQuranTranslationAsset() async {
+    return await rootBundle
+        .loadString('assets/quran_translations-1680683324.json');
   }
 
   Future<List<QuranVerse>> fetchData() async {
@@ -53,14 +89,36 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
     for (var item in jsonResponse.values) {
       data.add(QuranVerse.fromJson(item));
     }
-    print(jsonResponse);
+
+    // print(jsonResponse);
     return data;
+  }
+
+//quran_translation
+  Future<List> translationData() async {
+    // print('fetching');
+    String jsonString1 = await _loadQuranTranslationAsset();
+    final jsonResponse1 = json.decode(jsonString1);
+
+    // for (var item1 in jsonResponse1.values) {
+    //   print(item1);
+    //   data1.add(QuranTranslation.fromJson(item1));
+    // }
+    var jsons = jsonResponse1['data'];
+    var ayahData =
+        jsons.entries.map((e) => QuranTranslation.fromJson(e.value)).toList();
+
+    // var data = ayahData.map((e) => QuranTranslation.fromJson(e)).toList();
+    // print(data);
+    return ayahData;
   }
 
   @override
   void initState() {
     super.initState();
     updateData();
+    updateTranslation();
+    // filterTranslation();
   }
 
   @override
@@ -84,7 +142,7 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
           },
         ),
         title: Text(
-          'Al-Fatihah',
+          getSurahName(int.parse(selectedSurahId)),
           style: FlutterFlowTheme.of(context).title2.override(
                 fontFamily: 'Poppins',
                 color: Color(0xFFBE6CC6),
@@ -105,7 +163,7 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
         elevation: 2,
       ),
       body: Center(
-        child: data == null
+        child: quranWord == null && translation == null
             ? const CircularProgressIndicator()
             : Column(
                 children: [
@@ -151,9 +209,9 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                         children: [
                           Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 25, 0, 15),
+                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 15),
                             child: Text(
-                              'Al-Fatihah',
+                              getSurahName(int.parse(selectedSurahId)),
                               style: FlutterFlowTheme.of(context)
                                   .bodyText1
                                   .override(
@@ -168,32 +226,37 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                             padding:
                                 EdgeInsetsDirectional.fromSTEB(0, 0, 0, 20),
                             child: Text(
-                              'The Opening ',
+                              getSurahNameEnglish(int.parse(selectedSurahId)),
                               style: FlutterFlowTheme.of(context)
                                   .bodyText1
                                   .override(
                                     fontFamily: 'Poppins',
                                     color: Colors.white,
+                                    fontSize: 20,
                                     fontWeight: FontWeight.w500,
                                   ),
                             ),
                           ),
                           Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 20),
+                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
                             child: Text(
-                              'MECCAH - 7 VERSES',
+                              getPlaceOfRevelation(int.parse(selectedSurahId)) +
+                                  " - " +
+                                  getVerseCount(int.parse(selectedSurahId))
+                                      .toString() +
+                                  " VERSES ",
                               style: FlutterFlowTheme.of(context)
                                   .bodyText1
                                   .override(
-                                    fontFamily: 'Poppins',
-                                    color: Colors.white,
-                                  ),
+                                      fontFamily: 'Poppins',
+                                      color: Colors.white,
+                                      fontSize: 20),
                             ),
                           ),
                           Padding(
                             padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 25, 0, 0),
+                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
                             child: Text(
                               'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
                               style: TextStyle(
@@ -209,149 +272,169 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                   ),
                   Expanded(
                     child: ListView.builder(
-                      itemCount: data!.length,
+                      itemCount: quranWord!.length,
                       itemBuilder: (context, index) {
                         if (selectedSurahId.isNotEmpty &&
-                            data![index].suraId != selectedSurahId) {
+                            quranWord![index].suraId != selectedSurahId) {
                           return SizedBox.shrink();
                         }
 
                         return Column(
                           children: [
-                            // if (index == 0 ||
-                            //     data![index].suraId != data![index - 1].suraId)
-                            //   SizedBox(height: 10),
-                            // if (index == 0 ||
-                            //     data![index].suraId != data![index - 1].suraId)
-                            //   Text(
-                            //     'Surah ${data![index].suraId}',
-                            //     style: TextStyle(
-                            //       fontWeight: FontWeight.bold,
-                            //       fontSize: 18,
-                            //     ),
-                            //   ),
-
-                            SizedBox(height: 20),
-
-                            SizedBox(
-                              height: 240,
-                              width: 380,
-                              child: LayoutBuilder(
-                                builder: (BuildContext context,
-                                    BoxConstraints constraints) {
-                                  return Container(
-                                    width: double.infinity,
-                                    height: null,
-                                    constraints: BoxConstraints(
-                                      maxWidth: double.infinity,
-                                      maxHeight: constraints.maxHeight,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Color(0xFFEDD1EE),
-                                      boxShadow: [
-                                        BoxShadow(
-                                          blurRadius: 12,
-                                          color: Color(0x33000000),
-                                          offset: Offset(0, 5),
-                                        )
-                                      ],
-                                      borderRadius: BorderRadius.circular(50),
-                                      shape: BoxShape.rectangle,
-                                    ),
-                                    child: Padding(
-                                      padding: EdgeInsets.symmetric(
-                                          horizontal: 20, vertical: 15),
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
-                                        children: [
-                                          Row(
-                                            mainAxisSize: MainAxisSize.max,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: Color(0xFFA469A8),
-                                                  boxShadow: [
-                                                    BoxShadow(
-                                                      blurRadius: 12,
-                                                      color: Color(0x33000000),
-                                                      offset: Offset(0, 5),
-                                                    )
-                                                  ],
-                                                  shape: BoxShape.circle,
-                                                ),
-                                                child: Padding(
-                                                  padding:
-                                                      const EdgeInsets.all(8.0),
-                                                  child: Align(
-                                                    alignment: Alignment.center,
-                                                    child: FittedBox(
-                                                      child: Text(
-                                                        data![index].aya!,
-                                                        style:
-                                                            GoogleFonts.getFont(
-                                                          'Lato',
-                                                          color: Colors.white,
-                                                          fontWeight:
-                                                              FontWeight.w800,
-                                                          fontSize: 20,
+                            Column(
+                              children: [
+                                Padding(
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 8), // Add padding here
+                                  child: Container(
+                                    height: null, // Set height to null
+                                    width: 380,
+                                    child: LayoutBuilder(
+                                      builder: (BuildContext context,
+                                          BoxConstraints constraints) {
+                                        return Container(
+                                          width: double.infinity,
+                                          height: null,
+                                          constraints: BoxConstraints(
+                                            maxWidth: double.infinity,
+                                            maxHeight: constraints.maxHeight,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: Color(0xFFEDD1EE),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                blurRadius: 12,
+                                                color: Color(0x33000000),
+                                                offset: Offset(0, 5),
+                                              )
+                                            ],
+                                            borderRadius:
+                                                BorderRadius.circular(50),
+                                            shape: BoxShape.rectangle,
+                                          ),
+                                          child: Padding(
+                                            padding: EdgeInsets.symmetric(
+                                                horizontal: 20, vertical: 15),
+                                            child: Column(
+                                              mainAxisAlignment:
+                                                  MainAxisAlignment
+                                                      .spaceBetween,
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: [
+                                                Row(
+                                                  mainAxisSize:
+                                                      MainAxisSize.max,
+                                                  children: [
+                                                    Container(
+                                                      decoration: BoxDecoration(
+                                                        color:
+                                                            Color(0xFFA469A8),
+                                                        boxShadow: [
+                                                          BoxShadow(
+                                                            blurRadius: 12,
+                                                            color: Color(
+                                                                0x33000000),
+                                                            offset:
+                                                                Offset(0, 5),
+                                                          )
+                                                        ],
+                                                        shape: BoxShape.circle,
+                                                      ),
+                                                      child: Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .all(8.0),
+                                                        child: Align(
+                                                          alignment:
+                                                              Alignment.center,
+                                                          child: FittedBox(
+                                                            child: Text(
+                                                              quranWord![index]
+                                                                  .aya!,
+                                                              style: GoogleFonts
+                                                                  .getFont(
+                                                                'Lato',
+                                                                color: Colors
+                                                                    .white,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .w800,
+                                                                fontSize: 20,
+                                                              ),
+                                                            ),
+                                                          ),
                                                         ),
                                                       ),
                                                     ),
+                                                    Spacer(),
+                                                    FlutterFlowIconButton(
+                                                      borderColor:
+                                                          Colors.transparent,
+                                                      buttonSize: 45,
+                                                      icon: Icon(
+                                                        Icons.share_outlined,
+                                                        color:
+                                                            Color(0xFFBE6CC6),
+                                                        size: 25,
+                                                      ),
+                                                      onPressed: () {
+                                                        print(
+                                                            'IconButton pressed ...');
+                                                      },
+                                                    ),
+                                                    SizedBox(width: 10),
+                                                    FlutterFlowIconButton(
+                                                      borderColor:
+                                                          Colors.transparent,
+                                                      buttonSize: 45,
+                                                      icon: Icon(
+                                                        Icons
+                                                            .bookmark_border_rounded,
+                                                        color:
+                                                            Color(0xFFBE6CC6),
+                                                        size: 25,
+                                                      ),
+                                                      onPressed: () {
+                                                        print(
+                                                            'IconButton pressed ...');
+                                                      },
+                                                    ),
+                                                  ],
+                                                ),
+                                                SizedBox(height: 10),
+                                                SingleChildScrollView(
+                                                  child: Text(
+                                                    quranWord![index].text!,
+                                                    textAlign: TextAlign.end,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'QuranIrab',
+                                                      fontSize: 20,
+                                                    ),
                                                   ),
                                                 ),
-                                              ),
-                                              Spacer(),
-                                              FlutterFlowIconButton(
-                                                borderColor: Colors.transparent,
-                                                buttonSize: 45,
-                                                icon: Icon(
-                                                  Icons.share_outlined,
-                                                  color: Color(0xFFBE6CC6),
-                                                  size: 25,
+                                                SizedBox(height: 10),
+                                                SingleChildScrollView(
+                                                  child: Text(
+                                                    translation?[index].text ??
+                                                        '',
+                                                    textAlign: TextAlign.end,
+                                                    style: const TextStyle(
+                                                      fontFamily: 'QuranIrab',
+                                                      fontSize: 20,
+                                                    ),
+                                                  ),
                                                 ),
-                                                onPressed: () {
-                                                  print(
-                                                      'IconButton pressed ...');
-                                                },
-                                              ),
-                                              SizedBox(width: 10),
-                                              FlutterFlowIconButton(
-                                                borderColor: Colors.transparent,
-                                                buttonSize: 45,
-                                                icon: Icon(
-                                                  Icons.bookmark_border_rounded,
-                                                  color: Color(0xFFBE6CC6),
-                                                  size: 25,
-                                                ),
-                                                onPressed: () {
-                                                  print(
-                                                      'IconButton pressed ...');
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          SizedBox(height: 10),
-                                          Expanded(
-                                            child: SingleChildScrollView(
-                                              child: Text(
-                                                data![index].text!,
-                                                textAlign: TextAlign.end,
-                                                style: const TextStyle(
-                                                  fontFamily: 'QuranIrab',
-                                                  fontSize: 20,
-                                                ),
-                                              ),
+                                              ],
                                             ),
                                           ),
-                                        ],
-                                      ),
+                                        );
+                                      },
                                     ),
-                                  );
-                                },
-                              ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ],
                         );
@@ -366,11 +449,24 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
 
   Future<void> updateData() async {
     try {
-      data = await fetchData();
-      surahIds = data!.map((verse) => verse.suraId!).toSet().toList();
+      quranWord = await fetchData();
+      surahIds = quranWord!.map((verse) => verse.suraId!).toSet().toList();
       setState(() {});
+      // translation = await translationData();
     } catch (e) {
       print(e);
+    }
+  }
+
+  Future<void> updateTranslation() async {
+    try {
+      translation = await translationData();
+      // surahIds = quranWord!.map((verse) => verse.suraId!).toSet().toList();
+      setState(() {});
+
+      // translation = await translationData();
+    } catch (e) {
+      print('translation' + e.toString());
     }
   }
 }
