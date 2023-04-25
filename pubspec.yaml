@@ -52,6 +52,8 @@ dependencies:
   timeago: ^3.4.0
   page_transition: ^2.0.9
   auto_size_text: ^3.0.0
+  quran: ^1.2.2
+  card_swiper: ^2.0.4
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +90,7 @@ flutter:
   assets:
      - assets/data.json
      - assets/new_quran_fonttext1.json
+     - assets/quran_translations.json
 
   #   - images/a_dot_ham.jpeg
 

@@ -18,6 +18,10 @@ abstract class FlutterFlowTheme {
 
   get primaryBtnText => null;
 
+  get titleSmall => null;
+
+  get bodyMedium => null;
+
   static Future initialize() async =>
       _prefs = await SharedPreferences.getInstance();
   static ThemeMode get themeMode {

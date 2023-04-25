@@ -33,6 +33,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.1"
+  card_swiper:
+    dependency: "direct main"
+    description:
+      name: card_swiper
+      sha256: "0c94c538f47be1dab52d018d4900a7046b4cb0700dc7f95b8628da89d1212b35"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.4"
   characters:
     dependency: transitive
     description:
@@ -408,6 +416,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.5"
+  quran:
+    dependency: "direct main"
+    description:
+      name: quran
+      sha256: b52ceeae1083a856a3eaacbbfbdd493e41789970b6d9bee61c6d968fc326d947
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.2"
   rfc_6901:
     dependency: transitive
     description:

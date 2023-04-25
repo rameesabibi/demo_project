@@ -1,4 +1,4 @@
-import 'package:demo_project/quran_verse.dart';
+import 'package:demo_project/surah/quran_verse.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,7 +17,9 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const QuranVerseScreen(),
+      home: const QuranVerseScreen(
+        surahId: "2",
+      ),
     );
   }
 
