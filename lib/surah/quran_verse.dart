@@ -4,14 +4,16 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
-import '../../flutter_flow/flutter_flow_icon_button.dart';
-import '../../flutter_flow/flutter_flow_theme.dart';
+import '../flutter_flow/flutter_flow_icon_button copy.dart';
+import '../flutter_flow/flutter_flow_icon_button.dart';
+import '../flutter_flow/flutter_flow_theme copy.dart';
+import '../flutter_flow/flutter_flow_theme.dart';
 import 'QuranTranslation.dart';
 import 'QuranVerseModel.dart';
-import '../flutter_flow/flutter_flow_icon_button copy.dart';
-import '../flutter_flow/flutter_flow_theme copy.dart';
+
+import 'flutter_flow/flutter_flow_icon_button copy.dart';
+import 'flutter_flow/flutter_flow_theme copy.dart';
 import 'package:quran/quran.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 //quran_translation
 //test
@@ -41,6 +43,11 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
     return await rootBundle.loadString('assets/new_quran_fonttext1.json');
   }
 
+  //quran_translation
+  Future<String> _loadQuranTranslationAsset() async {
+    return await rootBundle.loadString('assets/quran_translations.json');
+  }
+
   Future<List<QuranVerse>> fetchData() async {
     String jsonString = await _loadQuranVerseAsset();
     final jsonResponse = json.decode(jsonString);
@@ -51,11 +58,6 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
 
     // print(jsonResponse);
     return data;
-  }
-
-  //quran_translation
-  Future<String> _loadQuranTranslationAsset() async {
-    return await rootBundle.loadString('assets/quran_translations.json');
   }
 
   //quran_translation
@@ -148,22 +150,6 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
             ? const CircularProgressIndicator()
             : Column(
                 children: [
-                  // DropdownButton<String>(
-                  //   value: widget.surahId.isNotEmpty ? widget.surahId : null,
-                  //   hint: const Text('Select Surah'),
-                  //   items: surahIds
-                  //       .map<DropdownMenuItem<String>>((String surahId) {
-                  //     return DropdownMenuItem<String>(
-                  //       value: surahId,
-                  //       child: Text('Surah $surahId'),
-                  //     );
-                  //   }).toList(),
-                  //   onChanged: (String? newValue) {
-                  //     setState(() {
-                  //       widget.surahId;
-                  //     });
-                  //   },
-                  // ),
                   Padding(
                     padding: EdgeInsetsDirectional.fromSTEB(10, 15, 10, 0),
                     child: Container(
@@ -379,52 +365,11 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                                                             Color(0xFFBE6CC6),
                                                         size: 25,
                                                       ),
-                                                      onPressed: () async {
-                                                        final CollectionReference
-                                                            bookmarksCollection =
-                                                            FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                    'bookmarks');
-                                                        try {
-                                                          await bookmarksCollection
-                                                              .add({
-                                                            'userId':
-                                                                'user123', // replace with the actual user ID
-                                                            'timestamp':
-                                                                DateTime.now(),
-                                                            // add other bookmark properties as needed
-                                                          });
-                                                          showDialog(
-                                                            context: context,
-                                                            builder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return AlertDialog(
-                                                                title: Text(
-                                                                    'Bookmark'),
-                                                                content: Text(
-                                                                    'Bookmark added.'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    child: Text(
-                                                                        'OK'),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop();
-                                                                    },
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
-                                                        } catch (e) {
-                                                          print(e.toString());
-                                                        }
+                                                      onPressed: () {
+                                                        print(
+                                                            'IconButton pressed ...');
                                                       },
-                                                    )
+                                                    ),
                                                   ],
                                                 ),
                                                 SizedBox(height: 10),
@@ -614,8 +559,10 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
     final results = quranWord!
         .where((verse) =>
             verse.text!.toLowerCase().contains(query.toLowerCase()) &&
-                verse.suraId!.toString().toLowerCase() == query.toLowerCase() ||
-            verse.aya!.toLowerCase() == query.toLowerCase())
+                verse.suraId!.toString().toLowerCase() == query.toLowerCase() &&
+                verse.suraId == surahId ||
+            verse.aya!.toLowerCase() == query.toLowerCase() &&
+                verse.suraId == surahId)
         .toList();
 
     if (results.isEmpty) {
@@ -631,18 +578,80 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
             // Jump to the original result
             Navigator.pop(context, verse);
           },
-          child: ListTile(
-            title: Text(
-              verse.aya!,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Text(
-              verse.text!,
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontFamily: 'QuranIrab',
-                fontSize: 15,
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+            child: Container(
+              width: double.infinity,
+              height: null,
+              constraints: BoxConstraints(
+                maxWidth: double.infinity,
+              ),
+              decoration: BoxDecoration(
+                color: Color.fromARGB(255, 233, 198, 235),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 12,
+                    color: Color.fromRGBO(0, 0, 0, 0.2),
+                    offset: Offset(0, 5),
+                  )
+                ],
+                borderRadius: BorderRadius.circular(50),
+                shape: BoxShape.rectangle,
+              ),
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Row(
+                      mainAxisSize: MainAxisSize.max,
+                      children: [
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Color(0xFFA469A8),
+                            boxShadow: [
+                              BoxShadow(
+                                blurRadius: 12,
+                                color: Color(0x33000000),
+                                offset: Offset(0, 5),
+                              )
+                            ],
+                            shape: BoxShape.circle,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Align(
+                              alignment: Alignment.center,
+                              child: FittedBox(
+                                child: Text(
+                                  verse.aya!,
+                                  style: GoogleFonts.getFont(
+                                    'Lato',
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w800,
+                                    fontSize: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SingleChildScrollView(
+                      child: Text(
+                        verse.text!,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          fontFamily: 'QuranIrab',
+                          fontSize: 25,
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                  ],
+                ),
               ),
             ),
           ),
@@ -660,8 +669,10 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
     final results = quranWord!
         .where((verse) =>
             verse.text!.toLowerCase().contains(query.toLowerCase()) &&
-                verse.suraId!.toString().toLowerCase() == query.toLowerCase() ||
-            verse.aya!.toLowerCase() == query.toLowerCase())
+                verse.suraId!.toString().toLowerCase() == query.toLowerCase() &&
+                verse.suraId == surahId ||
+            verse.aya!.toLowerCase() == query.toLowerCase() &&
+                verse.suraId == surahId)
         .toList();
 
     if (results.isEmpty) {
@@ -672,24 +683,82 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
       itemCount: results.length,
       itemBuilder: (context, index) {
         final verse = results[index];
-        return ListTile(
-          title: Text(
-            verse.aya!,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(
-            verse.text!,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-              fontFamily: 'QuranIrab',
-              fontSize: 15,
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+          child: Container(
+            width: double.infinity,
+            height: null,
+            constraints: BoxConstraints(
+              maxWidth: double.infinity,
+            ),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(255, 233, 198, 235),
+              boxShadow: [
+                BoxShadow(
+                  blurRadius: 12,
+                  color: Color.fromRGBO(0, 0, 0, 0.2),
+                  offset: Offset(0, 5),
+                )
+              ],
+              borderRadius: BorderRadius.circular(50),
+              shape: BoxShape.rectangle,
+            ),
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Row(
+                    mainAxisSize: MainAxisSize.max,
+                    children: [
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Color(0xFFA469A8),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 12,
+                              color: Color(0x33000000),
+                              offset: Offset(0, 5),
+                            )
+                          ],
+                          shape: BoxShape.circle,
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Align(
+                            alignment: Alignment.center,
+                            child: FittedBox(
+                              child: Text(
+                                verse.aya!,
+                                style: GoogleFonts.getFont(
+                                  'Lato',
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 20,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SingleChildScrollView(
+                    child: Text(
+                      verse.text!,
+                      textAlign: TextAlign.right,
+                      style: const TextStyle(
+                        fontFamily: 'QuranIrab',
+                        fontSize: 25,
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                ],
+              ),
             ),
           ),
-          onTap: () {
-            // Jump to the original result
-            Navigator.pop(context, verse);
-          },
         );
       },
     );
