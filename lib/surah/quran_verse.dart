@@ -14,6 +14,7 @@ import 'QuranVerseModel.dart';
 import 'flutter_flow/flutter_flow_icon_button copy.dart';
 import 'flutter_flow/flutter_flow_theme copy.dart';
 import 'package:quran/quran.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 //quran_translation
 //test
@@ -30,8 +31,8 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
   List<QuranVerse>? quranWord;
 
   //quran_translation
-  List? translation1;
-  List? translation2;
+  List<QuranTranslation>? translation1;
+  List<QuranTranslation>? translation2;
   List<String> surahIds = [];
   List<QuranTranslation>? translation;
 
@@ -137,7 +138,8 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                   delegate: QuranVerseSearchDelegate(
                     quranWord,
                     widget.surahId,
-                    translation,
+                    translation1,
+                    translation2,
                   ));
             },
           ),
@@ -365,11 +367,52 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                                                             Color(0xFFBE6CC6),
                                                         size: 25,
                                                       ),
-                                                      onPressed: () {
-                                                        print(
-                                                            'IconButton pressed ...');
+                                                      onPressed: () async {
+                                                        final CollectionReference
+                                                            bookmarksCollection =
+                                                            FirebaseFirestore
+                                                                .instance
+                                                                .collection(
+                                                                    'bookmarks');
+                                                        try {
+                                                          await bookmarksCollection
+                                                              .add({
+                                                            'userId':
+                                                                'user123', // replace with the actual user ID
+                                                            'timestamp':
+                                                                DateTime.now(),
+                                                            // add other bookmark properties as needed
+                                                          });
+                                                          showDialog(
+                                                            context: context,
+                                                            builder:
+                                                                (BuildContext
+                                                                    context) {
+                                                              return AlertDialog(
+                                                                title: Text(
+                                                                    'Bookmark'),
+                                                                content: Text(
+                                                                    'Bookmark added.'),
+                                                                actions: [
+                                                                  TextButton(
+                                                                    child: Text(
+                                                                        'OK'),
+                                                                    onPressed:
+                                                                        () {
+                                                                      Navigator.of(
+                                                                              context)
+                                                                          .pop();
+                                                                    },
+                                                                  ),
+                                                                ],
+                                                              );
+                                                            },
+                                                          );
+                                                        } catch (e) {
+                                                          print(e.toString());
+                                                        }
                                                       },
-                                                    ),
+                                                    )
                                                   ],
                                                 ),
                                                 SizedBox(height: 10),
@@ -520,10 +563,12 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
 
 class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
   final List<QuranVerse>? quranWord;
-  final List<QuranTranslation>? translation;
+  final List<QuranTranslation>? translation1;
+  final List<QuranTranslation>? translation2;
   final String surahId;
 
-  QuranVerseSearchDelegate(this.quranWord, this.surahId, this.translation);
+  QuranVerseSearchDelegate(
+      this.quranWord, this.surahId, this.translation1, this.translation2);
 
   @override
   String get searchFieldLabel => 'Search Quran...';
@@ -560,7 +605,7 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
         .where((verse) =>
             verse.text!.toLowerCase().contains(query.toLowerCase()) &&
                 verse.suraId!.toString().toLowerCase() == query.toLowerCase() &&
-                verse.suraId == surahId ||
+                verse.text == surahId ||
             verse.aya!.toLowerCase() == query.toLowerCase() &&
                 verse.suraId == surahId)
         .toList();
@@ -569,10 +614,39 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
       return Center(child: Text('No results found'));
     }
 
+    final translation1Result = translation1!
+        .where((t1) =>
+            t1.text.toLowerCase().contains(query.toLowerCase()) &&
+                t1.sura_id.toString().toLowerCase() == query.toLowerCase() &&
+                t1.sura_id == surahId ||
+            t1.aya.toLowerCase() == query.toLowerCase() &&
+                t1.sura_id == surahId)
+        .toList();
+
+    if (translation1Result.isEmpty) {
+      return Center(child: Text('No results found'));
+    }
+
+    final translation2Result = translation2!
+        .where((t2) =>
+            t2.text.toLowerCase().contains(query.toLowerCase()) &&
+                t2.sura_id.toString().toLowerCase() == query.toLowerCase() &&
+                t2.sura_id == surahId ||
+            t2.aya.toLowerCase() == query.toLowerCase() &&
+                t2.sura_id == surahId)
+        .toList();
+
+    if (translation2Result.isEmpty) {
+      return Center(child: Text('No results found'));
+    }
+
     return ListView.builder(
       itemCount: results.length,
       itemBuilder: (context, index) {
         final verse = results[index];
+        final t1 = translation1Result[index];
+        final t2 = translation2Result[index];
+
         return GestureDetector(
           onTap: () {
             // Jump to the original result
@@ -650,6 +724,71 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
                       ),
                     ),
                     SizedBox(height: 15),
+                    SizedBox(
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            t1.text,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'QuranIrab',
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 234, 212, 237),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 12,
+                              color: Color.fromARGB(51, 0, 0, 0),
+                              offset: Offset(0, 5),
+                            )
+                          ],
+                          borderRadius: BorderRadius.circular(20),
+                          shape: BoxShape.rectangle,
+                          // border: Border.all(
+                          //   color: Color.fromARGB(
+                          //       255, 137, 52, 139),
+                          // ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    SizedBox(
+                      child: Container(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                        child: SingleChildScrollView(
+                          child: Text(
+                            t2.text,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontFamily: 'QuranIrab',
+                              fontSize: 15,
+                            ),
+                          ),
+                        ),
+                        decoration: BoxDecoration(
+                          color: Color.fromARGB(255, 234, 212, 237),
+                          boxShadow: [
+                            BoxShadow(
+                              blurRadius: 12,
+                              color: Color.fromARGB(51, 0, 0, 0),
+                              offset: Offset(0, 5),
+                            )
+                          ],
+                          borderRadius: BorderRadius.circular(20),
+                          shape: BoxShape.rectangle,
+                          // border: Border.all(
+                          //   color: Color.fromARGB(
+                          //       255, 137, 52, 139),
+                          // ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -670,7 +809,7 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
         .where((verse) =>
             verse.text!.toLowerCase().contains(query.toLowerCase()) &&
                 verse.suraId!.toString().toLowerCase() == query.toLowerCase() &&
-                verse.suraId == surahId ||
+                verse.text == surahId ||
             verse.aya!.toLowerCase() == query.toLowerCase() &&
                 verse.suraId == surahId)
         .toList();
@@ -679,10 +818,38 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
       return Center(child: Text('No results found'));
     }
 
+    final translation1Result = translation1!
+        .where((t1) =>
+            t1.text.toLowerCase().contains(query.toLowerCase()) &&
+                t1.sura_id.toString().toLowerCase() == query.toLowerCase() &&
+                t1.sura_id == surahId ||
+            t1.aya.toLowerCase() == query.toLowerCase() &&
+                t1.sura_id == surahId)
+        .toList();
+
+    if (translation1Result.isEmpty) {
+      return Center(child: Text('No results found'));
+    }
+    final translation2Result = translation2!
+        .where((t2) =>
+            t2.text.toLowerCase().contains(query.toLowerCase()) &&
+                t2.sura_id.toString().toLowerCase() == query.toLowerCase() &&
+                t2.sura_id == surahId ||
+            t2.aya.toLowerCase() == query.toLowerCase() &&
+                t2.sura_id == surahId)
+        .toList();
+
+    if (translation2Result.isEmpty) {
+      return Center(child: Text('No results found'));
+    }
+
     return ListView.builder(
       itemCount: results.length,
       itemBuilder: (context, index) {
         final verse = results[index];
+        final t1 = translation1Result[index];
+        final t2 = translation2Result[index];
+
         return Padding(
           padding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
           child: Container(
@@ -755,6 +922,71 @@ class QuranVerseSearchDelegate extends SearchDelegate<QuranVerse> {
                     ),
                   ),
                   SizedBox(height: 15),
+                  SizedBox(
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          t1.text,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'QuranIrab',
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 234, 212, 237),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 12,
+                            color: Color.fromARGB(51, 0, 0, 0),
+                            offset: Offset(0, 5),
+                          )
+                        ],
+                        borderRadius: BorderRadius.circular(20),
+                        shape: BoxShape.rectangle,
+                        // border: Border.all(
+                        //   color: Color.fromARGB(
+                        //       255, 137, 52, 139),
+                        // ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: 15),
+                  SizedBox(
+                    child: Container(
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                      child: SingleChildScrollView(
+                        child: Text(
+                          t2.text,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontFamily: 'QuranIrab',
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                      decoration: BoxDecoration(
+                        color: Color.fromARGB(255, 234, 212, 237),
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 12,
+                            color: Color.fromARGB(51, 0, 0, 0),
+                            offset: Offset(0, 5),
+                          )
+                        ],
+                        borderRadius: BorderRadius.circular(20),
+                        shape: BoxShape.rectangle,
+                        // border: Border.all(
+                        //   color: Color.fromARGB(
+                        //       255, 137, 52, 139),
+                        // ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),
