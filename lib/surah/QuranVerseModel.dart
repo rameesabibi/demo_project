@@ -18,4 +18,6 @@ class QuranVerse {
   }
 
   get ayahNumber => null;
+
+  get verse => null;
 }

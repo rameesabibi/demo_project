@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
+import '../bookmark_page.dart';
 import '../flutter_flow/flutter_flow_icon_button copy.dart';
 import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme copy.dart';
@@ -15,6 +16,7 @@ import 'flutter_flow/flutter_flow_icon_button copy.dart';
 import 'flutter_flow/flutter_flow_theme copy.dart';
 import 'package:quran/quran.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 //quran_translation
 //test
@@ -35,18 +37,12 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
   List<QuranTranslation>? translation2;
   List<String> surahIds = [];
   List<QuranTranslation>? translation;
+  late List<int> _bookmarkedVerses;
 
   // String selectedSurahId = '1';
 
-  get surahNames => null;
-
   Future<String> _loadQuranVerseAsset() async {
     return await rootBundle.loadString('assets/new_quran_fonttext1.json');
-  }
-
-  //quran_translation
-  Future<String> _loadQuranTranslationAsset() async {
-    return await rootBundle.loadString('assets/quran_translations.json');
   }
 
   Future<List<QuranVerse>> fetchData() async {
@@ -59,6 +55,11 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
 
     // print(jsonResponse);
     return data;
+  }
+
+  //quran_translation
+  Future<String> _loadQuranTranslationAsset() async {
+    return await rootBundle.loadString('assets/quran_translations.json');
   }
 
   //quran_translation
@@ -96,7 +97,23 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateData();
       updateTranslation();
+      _getBookmarkedVerses();
     });
+  }
+
+  Future<void> _getBookmarkedVerses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarkedVerses = prefs.getStringList('bookmarkedVerses') ?? [];
+    setState(() {
+      _bookmarkedVerses = bookmarkedVerses.map(int.parse).toList();
+    });
+  }
+
+  Future<void> _saveBookmarkedVerses() async {
+    final prefs = await SharedPreferences.getInstance();
+    final bookmarkedVerses =
+        _bookmarkedVerses.map((v) => v.toString()).toList();
+    await prefs.setStringList('bookmarkedVerses', bookmarkedVerses);
   }
 
   @override
@@ -115,8 +132,8 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
             color: Color(0xFF424242),
             size: 30,
           ),
-          onPressed: () async {
-            context.pop();
+          onPressed: () {
+            Navigator.pop(context);
           },
         ),
         title: Text(
@@ -152,93 +169,6 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
             ? const CircularProgressIndicator()
             : Column(
                 children: [
-                  Padding(
-                    padding: EdgeInsetsDirectional.fromSTEB(10, 15, 10, 0),
-                    child: Container(
-                      width: double.infinity,
-                      height: 280,
-                      decoration: BoxDecoration(
-                        boxShadow: [
-                          BoxShadow(
-                            blurRadius: 12,
-                            color: Color(0x33000000),
-                            offset: Offset(0, 5),
-                          )
-                        ],
-                        gradient: LinearGradient(
-                          colors: [Color(0xFFA469A8), Color(0xFFDAADDB)],
-                          stops: [0, 1],
-                          begin: AlignmentDirectional(1, -1),
-                          end: AlignmentDirectional(-1, 1),
-                        ),
-                        borderRadius: BorderRadius.circular(40),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 40, 0, 15),
-                            child: Text(
-                              getSurahName(int.parse(widget.surahId)),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyText1
-                                  .override(
-                                    fontFamily: 'Poppins',
-                                    color: Colors.white,
-                                    fontSize: 22,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 20),
-                            child: Text(
-                              getSurahNameEnglish(int.parse(widget.surahId)),
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyText1
-                                  .override(
-                                    fontFamily: 'Poppins',
-                                    color: Colors.white,
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
-                            child: Text(
-                              getPlaceOfRevelation(int.parse(widget.surahId)) +
-                                  " - " +
-                                  getVerseCount(int.parse(widget.surahId))
-                                      .toString() +
-                                  " VERSES ",
-                              style: FlutterFlowTheme.of(context)
-                                  .bodyText1
-                                  .override(
-                                      fontFamily: 'Poppins',
-                                      color: Colors.white,
-                                      fontSize: 20),
-                            ),
-                          ),
-                          Padding(
-                            padding:
-                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
-                            child: Text(
-                              'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 35,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
                   Expanded(
                     child: ListView.builder(
                       itemCount: quranWord!.length,
@@ -361,58 +291,44 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                                                           Colors.transparent,
                                                       buttonSize: 45,
                                                       icon: Icon(
-                                                        Icons
-                                                            .bookmark_border_rounded,
+                                                        _bookmarkedVerses
+                                                                .contains(index)
+                                                            ? Icons.bookmark
+                                                            : Icons
+                                                                .bookmark_border_rounded,
                                                         color:
                                                             Color(0xFFBE6CC6),
                                                         size: 25,
                                                       ),
-                                                      onPressed: () async {
-                                                        final CollectionReference
-                                                            bookmarksCollection =
-                                                            FirebaseFirestore
-                                                                .instance
-                                                                .collection(
-                                                                    'bookmarks');
-                                                        try {
-                                                          await bookmarksCollection
-                                                              .add({
-                                                            'userId':
-                                                                'user123', // replace with the actual user ID
-                                                            'timestamp':
-                                                                DateTime.now(),
-                                                            // add other bookmark properties as needed
-                                                          });
-                                                          showDialog(
-                                                            context: context,
-                                                            builder:
-                                                                (BuildContext
-                                                                    context) {
-                                                              return AlertDialog(
-                                                                title: Text(
-                                                                    'Bookmark'),
-                                                                content: Text(
-                                                                    'Bookmark added.'),
-                                                                actions: [
-                                                                  TextButton(
-                                                                    child: Text(
-                                                                        'OK'),
-                                                                    onPressed:
-                                                                        () {
-                                                                      Navigator.of(
-                                                                              context)
-                                                                          .pop();
-                                                                    },
-                                                                  ),
-                                                                ],
-                                                              );
-                                                            },
-                                                          );
-                                                        } catch (e) {
-                                                          print(e.toString());
-                                                        }
+                                                      onPressed: () {
+                                                        setState(() {
+                                                          if (_bookmarkedVerses
+                                                              .contains(
+                                                                  index)) {
+                                                            _bookmarkedVerses
+                                                                .remove(index);
+                                                          } else {
+                                                            _bookmarkedVerses
+                                                                .add(index);
+                                                          }
+                                                          _saveBookmarkedVerses();
+                                                        });
+                                                        Navigator.push(
+                                                          context,
+                                                          MaterialPageRoute(
+                                                            builder: (context) =>
+                                                                BookmarkPage(
+                                                              bookmarkedVerses:
+                                                                  _bookmarkedVerses,
+                                                              quranBookmark:
+                                                                  quranWord!,
+                                                              surahId: widget
+                                                                  .surahId, // Pass the value
+                                                            ),
+                                                          ),
+                                                        );
                                                       },
-                                                    )
+                                                    ),
                                                   ],
                                                 ),
                                                 SizedBox(height: 10),
