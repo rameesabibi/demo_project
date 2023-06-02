@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'dart:convert';
 
-import '../bookmark_page.dart';
 import '../flutter_flow/flutter_flow_icon_button copy.dart';
-import '../flutter_flow/flutter_flow_icon_button.dart';
 import '../flutter_flow/flutter_flow_theme copy.dart';
-import '../flutter_flow/flutter_flow_theme.dart';
 import 'QuranTranslation.dart';
 import 'QuranVerseModel.dart';
 
-import 'flutter_flow/flutter_flow_icon_button copy.dart';
-import 'flutter_flow/flutter_flow_theme copy.dart';
 import 'package:quran/quran.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'bookmark_page.dart';
 
 //quran_translation
 //test
@@ -32,14 +27,13 @@ class QuranVerseScreen extends StatefulWidget {
 class _QuranVerseScreenState extends State<QuranVerseScreen> {
   List<QuranVerse>? quranWord;
 
-  //quran_translation
   List<QuranTranslation>? translation1;
   List<QuranTranslation>? translation2;
   List<String> surahIds = [];
   List<QuranTranslation>? translation;
-  late List<int> _bookmarkedVerses;
+  List<String> _folders = [];
 
-  // String selectedSurahId = '1';
+  List<String> _selectedFolders = [];
 
   Future<String> _loadQuranVerseAsset() async {
     return await rootBundle.loadString('assets/new_quran_fonttext1.json');
@@ -97,23 +91,7 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateData();
       updateTranslation();
-      _getBookmarkedVerses();
     });
-  }
-
-  Future<void> _getBookmarkedVerses() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bookmarkedVerses = prefs.getStringList('bookmarkedVerses') ?? [];
-    setState(() {
-      _bookmarkedVerses = bookmarkedVerses.map(int.parse).toList();
-    });
-  }
-
-  Future<void> _saveBookmarkedVerses() async {
-    final prefs = await SharedPreferences.getInstance();
-    final bookmarkedVerses =
-        _bookmarkedVerses.map((v) => v.toString()).toList();
-    await prefs.setStringList('bookmarkedVerses', bookmarkedVerses);
   }
 
   @override
@@ -169,6 +147,93 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
             ? const CircularProgressIndicator()
             : Column(
                 children: [
+                  Padding(
+                    padding: EdgeInsetsDirectional.fromSTEB(10, 15, 10, 0),
+                    child: Container(
+                      width: double.infinity,
+                      height: 280,
+                      decoration: BoxDecoration(
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 12,
+                            color: Color(0x33000000),
+                            offset: Offset(0, 5),
+                          )
+                        ],
+                        gradient: LinearGradient(
+                          colors: [Color(0xFFA469A8), Color(0xFFDAADDB)],
+                          stops: [0, 1],
+                          begin: AlignmentDirectional(1, -1),
+                          end: AlignmentDirectional(-1, 1),
+                        ),
+                        borderRadius: BorderRadius.circular(40),
+                      ),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 40, 0, 15),
+                            child: Text(
+                              getSurahName(int.parse(widget.surahId)),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyText1
+                                  .override(
+                                    fontFamily: 'Poppins',
+                                    color: Colors.white,
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 20),
+                            child: Text(
+                              getSurahNameEnglish(int.parse(widget.surahId)),
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyText1
+                                  .override(
+                                    fontFamily: 'Poppins',
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 10, 0, 0),
+                            child: Text(
+                              getPlaceOfRevelation(int.parse(widget.surahId)) +
+                                  " - " +
+                                  getVerseCount(int.parse(widget.surahId))
+                                      .toString() +
+                                  " VERSES ",
+                              style: FlutterFlowTheme.of(context)
+                                  .bodyText1
+                                  .override(
+                                      fontFamily: 'Poppins',
+                                      color: Colors.white,
+                                      fontSize: 20),
+                            ),
+                          ),
+                          Padding(
+                            padding:
+                                EdgeInsetsDirectional.fromSTEB(0, 20, 0, 0),
+                            child: Text(
+                              'بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
                   Expanded(
                     child: ListView.builder(
                       itemCount: quranWord!.length,
@@ -291,39 +356,181 @@ class _QuranVerseScreenState extends State<QuranVerseScreen> {
                                                           Colors.transparent,
                                                       buttonSize: 45,
                                                       icon: Icon(
-                                                        _bookmarkedVerses
-                                                                .contains(index)
-                                                            ? Icons.bookmark
-                                                            : Icons
-                                                                .bookmark_border_rounded,
+                                                        Icons
+                                                            .bookmark_border_rounded,
                                                         color:
                                                             Color(0xFFBE6CC6),
                                                         size: 25,
                                                       ),
                                                       onPressed: () {
-                                                        setState(() {
-                                                          if (_bookmarkedVerses
-                                                              .contains(
-                                                                  index)) {
-                                                            _bookmarkedVerses
-                                                                .remove(index);
-                                                          } else {
-                                                            _bookmarkedVerses
-                                                                .add(index);
-                                                          }
-                                                          _saveBookmarkedVerses();
-                                                        });
-                                                        Navigator.push(
-                                                          context,
-                                                          MaterialPageRoute(
-                                                            builder: (context) =>
-                                                                BookmarkPage(
-                                                              bookmarkedVerses:
-                                                                  _bookmarkedVerses,
-                                                              quranBookmark:
-                                                                  quranWord!,
-                                                              surahId: widget
-                                                                  .surahId, // Pass the value
+                                                        showModalBottomSheet(
+                                                          context: context,
+                                                          builder: (context) =>
+                                                              LayoutBuilder(
+                                                            builder: (context,
+                                                                    constraints) =>
+                                                                Container(
+                                                              decoration:
+                                                                  BoxDecoration(
+                                                                color: Colors
+                                                                    .white,
+                                                                borderRadius:
+                                                                    BorderRadius
+                                                                        .only(
+                                                                  topLeft: Radius
+                                                                      .circular(
+                                                                          10.0),
+                                                                  topRight: Radius
+                                                                      .circular(
+                                                                          10.0),
+                                                                ),
+                                                              ),
+                                                              padding:
+                                                                  EdgeInsets
+                                                                      .all(
+                                                                          20.0),
+                                                              child: Container(
+                                                                child: Column(
+                                                                  mainAxisSize:
+                                                                      MainAxisSize
+                                                                          .min,
+                                                                  children: [
+                                                                    Container(
+                                                                      decoration:
+                                                                          BoxDecoration(
+                                                                        border: Border(
+                                                                            bottom:
+                                                                                BorderSide(color: Colors.grey)),
+                                                                      ),
+                                                                      child:
+                                                                          Row(
+                                                                        mainAxisAlignment:
+                                                                            MainAxisAlignment.spaceBetween,
+                                                                        children: [
+                                                                          Text(
+                                                                              'Save bookmark to ... ',
+                                                                              style: TextStyle(fontSize: 20)),
+                                                                          TextButton
+                                                                              .icon(
+                                                                            onPressed:
+                                                                                () {
+                                                                              Navigator.pop(context); // Close the bottom pop-up
+                                                                              Navigator.push(
+                                                                                context,
+                                                                                MaterialPageRoute(
+                                                                                  builder: (context) => BookmarkPage(
+                                                                                    surahId: widget.surahId,
+                                                                                    selectedFolder: '', aya: '', // Pass an empty folder to create a new one
+                                                                                  ),
+                                                                                ),
+                                                                              );
+                                                                            },
+                                                                            icon:
+                                                                                Icon(Icons.add),
+                                                                            label:
+                                                                                Text('Create Folder', style: TextStyle(fontSize: 18)),
+                                                                            style:
+                                                                                TextButton.styleFrom(
+                                                                              padding: EdgeInsets.zero,
+                                                                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                                                              alignment: Alignment.centerLeft,
+                                                                            ),
+                                                                          ),
+                                                                        ],
+                                                                      ),
+                                                                    ),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            8.0),
+                                                                    if (_folders
+                                                                        .isNotEmpty)
+                                                                      Container(
+                                                                        decoration:
+                                                                            BoxDecoration(
+                                                                          border:
+                                                                              Border(bottom: BorderSide(color: Colors.grey)),
+                                                                        ),
+                                                                        constraints:
+                                                                            BoxConstraints(maxHeight: constraints.maxHeight * 0.5),
+                                                                        child:
+                                                                            SingleChildScrollView(
+                                                                          child:
+                                                                              Column(
+                                                                            children:
+                                                                                _folders.map((folderName) {
+                                                                              bool isChecked = _selectedFolders.contains(folderName); // Check if the folder is selected
+                                                                              if (_folders.first == folderName) {
+                                                                                isChecked = true; // Set the first folder as checked
+                                                                              }
+
+                                                                              return StatefulBuilder(
+                                                                                builder: (context, setState) {
+                                                                                  return Row(
+                                                                                    children: [
+                                                                                      Checkbox(
+                                                                                        value: isChecked,
+                                                                                        onChanged: (newValue) {
+                                                                                          setState(() {
+                                                                                            if (isChecked) {
+                                                                                              _selectedFolders.remove(folderName); // Remove the folder from the selected folders list
+                                                                                            } else {
+                                                                                              _selectedFolders.add(folderName); // Add the folder to the selected folders list
+                                                                                            }
+                                                                                            isChecked = !isChecked; // Toggle the checked state
+                                                                                          });
+                                                                                        },
+                                                                                      ),
+                                                                                      Expanded(
+                                                                                        child: ListTile(
+                                                                                          title: Text(folderName),
+                                                                                          onTap: () {},
+                                                                                        ),
+                                                                                      ),
+                                                                                    ],
+                                                                                  );
+                                                                                },
+                                                                              );
+                                                                            }).toList(),
+                                                                          ),
+                                                                        ),
+                                                                      ),
+                                                                    if (_folders
+                                                                        .isEmpty)
+                                                                      Text(
+                                                                          'No folders available.'),
+                                                                    SizedBox(
+                                                                        height:
+                                                                            8.0),
+                                                                    Row(
+                                                                      mainAxisAlignment:
+                                                                          MainAxisAlignment
+                                                                              .spaceBetween,
+                                                                      children: [
+                                                                        TextButton
+                                                                            .icon(
+                                                                          onPressed:
+                                                                              () {
+                                                                            Navigator.pop(context); // Close the bottom pop-up
+                                                                            Navigator.push(
+                                                                              context,
+                                                                              MaterialPageRoute(
+                                                                                builder: (context) => BookmarkPage(
+                                                                                  surahId: widget.surahId,
+                                                                                  aya: quranWord![index].aya!, selectedFolder: '', // Pass the selected folder or an empty string if no folder is selected
+                                                                                ),
+                                                                              ),
+                                                                            );
+                                                                          },
+                                                                          icon:
+                                                                              Icon(Icons.done),
+                                                                          label:
+                                                                              Text('Done'),
+                                                                        ),
+                                                                      ],
+                                                                    ),
+                                                                  ],
+                                                                ),
+                                                              ),
                                                             ),
                                                           ),
                                                         );

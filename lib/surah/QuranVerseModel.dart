@@ -20,4 +20,10 @@ class QuranVerse {
   get ayahNumber => null;
 
   get verse => null;
+
+  get folder => null;
+
+  get folderName => null;
+
+  get selectedFolder => null;
 }

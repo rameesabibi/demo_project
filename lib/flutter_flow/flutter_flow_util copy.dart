@@ -9,8 +9,6 @@ import 'package:intl/intl.dart';
 import 'package:json_path/json_path.dart';
 import 'package:timeago/timeago.dart' as timeago;
 
-import '../main.dart';
-
 export 'lat_lng.dart';
 export 'place.dart';
 export 'local_file.dart';
